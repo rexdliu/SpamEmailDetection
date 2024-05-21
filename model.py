@@ -31,15 +31,21 @@ y = data['categories'].map({'spam': 1, 'ham': 0}).values  # Convert labels to nu
 
 #  Split the data into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+# Build the MLP classifier
+mlp = MLPClassifier(hidden_layer_sizes=(50,), activation='relu', solver='adam', max_iter=500, random_state=1)
 
-#  Train the MLP classifier
-mlp = MLPClassifier(hidden_layer_sizes=(150, 100, 50), max_iter=300, activation='relu', solver='adam', random_state=1)
+# Train the MLP classifier
 mlp.fit(X_train, y_train)
 
-#  Evaluate the model
+# Make predictions
 predictions = mlp.predict(X_test)
-print("Accuracy:", accuracy_score(y_test, predictions))
-print("Classification Report:\n", classification_report(y_test, predictions))
+predictions_probablity=mlp.predict_proba(X_test)[:,1]#probablity of spam
+# Evaluate the model
+accuracy = accuracy_score(y_test, predictions)
+report = classification_report(y_test, predictions, target_names=['ham', 'spam'])
+
+print("Accuracy:", accuracy)
+print("Classification Report:\n", report)
 
 
 
