@@ -1,51 +1,59 @@
-import numpy as np
 import pandas as pd
+import numpy as np
+import nltk
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
 from gensim.models import Word2Vec
 from sklearn.model_selection import train_test_split
-from sklearn.neural_network import MLPClassifier
 from sklearn.metrics import classification_report, accuracy_score
+from MLP import MLP
+
+# Load the dataset
+data = pd.read_csv('spam_email.csv')
+
+# Ensure NLTK resources are downloaded
+nltk.download('punkt')
+nltk.download('stopwords')
+stop_words = set(stopwords.words('english'))
+
+def preprocess(text):
+    text = text.lower()
+    tokens = word_tokenize(text)
+    tokens = [word for word in tokens if word.isalpha() and word not in stop_words]
+    return tokens
+
+data['processed'] = data['Message'].apply(preprocess)
+data['label'] = data['categories'].map({'spam': 1, 'ham': 0})
 
 # Load the pre-trained Word2Vec model
 model = Word2Vec.load("word2vec_email.model")
 
-# convert emails into vectors
-def email_to_vector(email, model):
-    words = [word for word in email if word in model.wv]
-    if words:
-        return np.mean(model.wv[words], axis=0)
+def email_to_vector(email):
+    words = preprocess(email)
+    vectors = [model.wv[word] for word in words if word in model.wv]
+    if vectors:
+        return np.mean(vectors, axis=0)
     else:
         return np.zeros(model.vector_size)
 
-# Load dataset based on vocabulary
-data = pd.read_csv('')
+X = np.array([email_to_vector(email) for email in data['Message']])
+y = data['label'].values.reshape(-1, 1)
 
-# Assume 'Message' is the column with emails and 'categories' is the column with labels
-data['processed'] = data['Message'].apply(lambda x: x.lower().split())  # Simple tokenization and case normalization
-
-# Convert each email to a vector
-data['vector'] = data['processed'].apply(lambda x: email_to_vector(x, model))
-
-# Prepare data for the MLP
-X = np.vstack(data['vector'])
-y = data['categories'].map({'spam': 1, 'ham': 0}).values  # Convert labels to numeric
-
-#  Split the data into training and testing sets
+# Split the data into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-# Build the MLP classifier
-mlp = MLPClassifier(hidden_layer_sizes=(50,), activation='relu', solver='adam', max_iter=500, random_state=1)
 
-# Train the MLP classifier
-mlp.fit(X_train, y_train)
+# Initialize and train the MLP
+input_size = X_train.shape[1]
+hidden_size = 50
+output_size = 1
 
-# Make predictions
-predictions = mlp.predict(X_test)
-predictions_probablity=mlp.predict_proba(X_test)[:,1]#probablity of spam
+mlp = MLP(input_size, hidden_size, output_size)
+mlp.train(X_train, y_train, epochs=1000, learning_rate=0.01)
+
 # Evaluate the model
+predictions = mlp.predict(X_test)
 accuracy = accuracy_score(y_test, predictions)
 report = classification_report(y_test, predictions, target_names=['ham', 'spam'])
 
 print("Accuracy:", accuracy)
 print("Classification Report:\n", report)
-
-
-
