@@ -48,13 +48,12 @@ input_size = X_train.shape[1]
 hidden_size = 50
 output_size = 1
 
-mlp = MLP(input_size, hidden_size, output_size)
-mlp.train(X_train, y_train, epochs=1000, learning_rate=0.1)
+Model = MLP(input_size, hidden_size, output_size)
+Model.train(X_train, y_train, epochs=10000, learning_rate=0.01)
 
 # Evaluate the model
-predictions = mlp.predict(X_test)
+predictions = Model.predict(X_test)
 accuracy = accuracy_score(y_test, predictions)
 report = classification_report(y_test, predictions, target_names=['ham', 'spam'])
-
 print("Accuracy:", accuracy)
 print("Classification Report:\n", report)
