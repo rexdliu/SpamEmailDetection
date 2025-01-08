@@ -26,12 +26,19 @@ class MLP:
         self.weights_input_hidden -= X.T.dot(hidden_delta) * learning_rate
         self.bias_hidden -= np.sum(hidden_delta, axis=0, keepdims=True) * learning_rate
 
+
     def train(self, X, y, epochs=1000, learning_rate=0.01):
         for epoch in range(epochs):
             output = self.forward(X)
-            self.backward(X, y, output, learning_rate)
+            self.backward(X, y, output,learning_rate)
+            # Adjust learning rate by scaling the updates
+            self.weights_hidden_output += learning_rate * self.weights_hidden_output
+            self.bias_output += learning_rate * self.bias_output
+            self.weights_input_hidden += learning_rate * self.weights_input_hidden
+            self.bias_hidden += learning_rate * self.bias_hidden
+
             if (epoch+1) % 100 == 0:
-                loss = np.mean(np.square(y - output))
+                loss = -np.mean(y * np.log(output) + (1 - y) * np.log(1 - output))
                 print(f'Epoch {epoch+1}/{epochs}, Loss: {loss:.4f}')
 
     def predict(self, X):

@@ -9,11 +9,12 @@ from sklearn.metrics import classification_report, accuracy_score
 from MLP import MLP
 
 # Load the dataset
-data = pd.read_csv('spam_email.csv')
+data = pd.read_csv('spam.csv')
 
 # Ensure NLTK resources are downloaded
 nltk.download('punkt')
 nltk.download('stopwords')
+nltk.download('punkt_tab')
 stop_words = set(stopwords.words('english'))
 
 def preprocess(text):
@@ -23,7 +24,7 @@ def preprocess(text):
     return tokens
 
 data['processed'] = data['Message'].apply(preprocess)
-data['label'] = data['categories'].map({'spam': 1, 'ham': 0})
+data['label'] = data['Category'].map({'spam': 1, 'ham': 0})
 
 # Load the pre-trained Word2Vec model
 model = Word2Vec.load("word2vec_email.model")
@@ -48,7 +49,7 @@ hidden_size = 50
 output_size = 1
 
 mlp = MLP(input_size, hidden_size, output_size)
-mlp.train(X_train, y_train, epochs=1000, learning_rate=0.01)
+mlp.train(X_train, y_train, epochs=1000, learning_rate=0.1)
 
 # Evaluate the model
 predictions = mlp.predict(X_test)
