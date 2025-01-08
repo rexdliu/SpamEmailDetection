@@ -87,7 +87,7 @@ class MLP:
 
             if (epoch+1) % 100 == 0:
                 loss = binary_cross_entropy(y, output)
-                print(f'Epoch {epoch+1}/{epochs}, Loss: {loss:.4f}')
+                print(f'Epochs {epoch+1}/{epochs}, Loss: {loss:.4f}')
 
     def predict(self, X):
         output = self.forward(X)
