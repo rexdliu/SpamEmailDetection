@@ -5,7 +5,23 @@ def binary_cross_entropy(y_true, y_pred, eps=1e-9):
         y_true * np.log(y_pred + eps) +
         (1 - y_true) * np.log(1 - y_pred + eps)
     )
+    def mixed_loss(y_true, y_pred, alpha=0.5, beta=0.5, eps=1e-9):
+    y_true_cls, y_true_reg = y_true[:, 0], y_true[:, 1]
+    y_pred_cls, y_pred_reg = y_pred[:, 0], y_pred[:, 1]
+    y_pred_cls = np.clip(y_pred_cls, eps, 1 - eps)
+    bce_loss = -np.mean(
+        y_true_cls * np.log(y_pred_cls) +
+        (1 - y_true_cls) * np.log(1 - y_pred_cls)
+    )
+    mse_loss = np.mean((y_true_reg - y_pred_reg) ** 2)
+    return alpha * bce_loss + beta * mse_loss
 
+def mean_squared_error(y_true, y_pred):
+    return np.mean((y_true - y_pred) ** 2)
+
+def categorical_cross_entropy(y_true, y_pred, eps=1e-9):
+    y_pred = np.clip(y_pred, eps, 1 - eps)
+    return -np.mean(np.sum(y_true * np.log(y_pred), axis=1))
 class MLP:
     def __init__(self, input_size, hidden_size, output_size, learning_rate=0.001):
         self.weights_input_hidden = np.random.randn(input_size, hidden_size) * 0.01
