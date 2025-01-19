@@ -1,2 +1,2 @@
 # SpamEmailDetection
-Group Assignment for Computing Mathematics
+Group Assignment for Numerical Analysis, which uitilzie the non-linear system
